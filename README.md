@@ -52,3 +52,4 @@
 1. 认证中心添加类RandomAuthenticationKeyGenerator
 2. 认证中心中修改AuthorizationServerConfig里的方法tokenStore()
 # cloud-service
+# cloud-service
