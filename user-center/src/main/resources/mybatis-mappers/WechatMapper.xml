@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.user.dao.WechatDao">
+
+    <update id="update">
+        update t_wechat
+        <set>
+            <if test="unionid != null and unionid != ''">
+                unionid = #{unionid,jdbcType=VARCHAR},
+            </if>
+            <if test="userId != null">
+                userId = #{userId,jdbcType=INTEGER},
+            </if>
+            <if test="nickname != null and nickname != ''">
+                nickname = #{nickname,jdbcType=VARCHAR},
+            </if>
+            <if test="sex != null and sex != ''">
+                sex = #{sex,jdbcType=VARCHAR},
+            </if>
+            <if test="province != null and province != ''">
+                province = #{province,jdbcType=VARCHAR},
+            </if>
+            <if test="city != null and city != ''">
+                city = #{city,jdbcType=VARCHAR},
+            </if>
+            <if test="country != null and country != ''">
+                country = #{country,jdbcType=VARCHAR},
+            </if>
+            <if test="headimgurl != null and headimgurl != ''">
+                headimgurl = #{headimgurl,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null">
+                updateTime = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+</mapper>

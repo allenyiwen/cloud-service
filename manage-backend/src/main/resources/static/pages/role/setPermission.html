@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en-us" id="extr-page">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" media="screen" href="../../layui/css/layui.css">
+</head>
+<body>
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+		<form class="layui-form" onsubmit="return false" id="form">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+				    <label class="layui-form-label"></label>
+				    <div class="layui-input-inline">
+				      <input type="checkbox" lay-filter="selectAll" lay-skin="primary" title="全选">
+				    </div>
+				</div>
+			 </div>
+			<div class="layui-form-item">
+				<div class="layui-input-block" id="ckb">
+				</div>
+			</div>
+			 <div class="layui-form-item">
+			    <div class="layui-input-block">
+			      <button class="layui-btn" onclick="save()">立即提交</button>
+			    </div>
+			  </div>
+		</form>
+	</div>
+
+	<script src="../../js/constant.js"></script>
+	<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="../../js/jq.js"></script>
+	<script type="text/javascript" src="../../js/common.js"></script>
+	<script type="text/javascript" src="../../layui/layui.js"></script>
+<script type="text/javascript">
+		//显示所有权限
+    	$.ajax({
+			type : 'get',
+			url : domainName + '/api-u/permissions',
+			async : false,
+			success : function(data) {
+				var ckb = $("#ckb");
+				$.each(data.data, function(i,item){
+					var id = item.id;
+					var name = item.name;
+					var input = $('<input type="checkbox" name="permission">');
+					input.attr("id", id);
+					input.attr("value", id);
+					input.attr("title", name);
+					ckb.append(input);
+				});
+			}
+		});
+		
+		//选中角色拥有的权限
+    	var roleId = getUrlParam("roleId");
+    	$.ajax({
+			type : 'get',
+			url : domainName + '/api-u/roles/' + roleId + '/permissions',
+			async : false,
+			success : function(data) {
+				if(data != null && data.length > 0){
+					$.each(data, function(i,item){
+						$("#"+ item.id).attr("checked",true);
+					});
+				}
+			}
+		});
+    
+		
+	layui.use(['form', 'layer'], function(){
+	    var layer = layui.layer;
+	    var form = layui.form;
+	    
+	    //全选事件
+	    form.on('checkbox(selectAll)', function(data){
+	    	 var checked = data.elem.checked; //是否被选中，true或者false
+    		 $("[name='permission']").each(function(){
+    			 $(this).attr("checked", checked);
+    		 });
+	         form.render();
+	    });  
+		
+	});
+	
+	
+	function save() {
+		var permissionIds = [];
+		$("input[name='permission']:checked").each(function(){
+			var v = $(this).val();
+			permissionIds.push(v);
+		});
+
+		$.ajax({
+			type : 'post',
+			url : domainName + '/api-u/roles/' + roleId + '/permissions',
+			contentType: "application/json; charset=utf-8",  
+			data : JSON.stringify(permissionIds),
+			success : function(data) {
+				layer.msg("成功", {shift: -1, time: 1000}, function(){
+					var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+					parent.layer.close(index);
+                });
+			}
+		});
+	}
+	
+</script>
+</body>
+</html>

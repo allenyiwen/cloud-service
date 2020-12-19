@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en-us" id="extr-page">
+<head>
+<meta charset="UTF-8">
+	<link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" media="screen" href="../../css/dataTables.bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" media="screen" href="../../layui/css/layui.css">
+</head>
+<body>
+	<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+		<div>
+			<div class="widget-body no-padding">
+				<table id="dt-table" class="table table-striped table-bordered table-hover" style="width:100%">
+					<thead>
+					<tr>
+					</tr>
+					<tr>
+						<th>serviceId</th>
+						<th>服务数</th>
+						<th>操作</th>
+					</tr>
+					</thead>
+					<tbody id="tbody">
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../js/constant.js"></script>
+	<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="../../js/jq.js"></script>
+	<script type="text/javascript" src="../../layui/layui.js"></script>
+<script type="text/javascript">
+	layui.use('layer', function(){
+	    var layer = layui.layer;
+        setTable();
+	});
+
+	function setTable() {
+        $.ajax({
+            type : 'get',
+            url : domainName + '/service-instances',
+            async : false,
+            success : function(data) {
+                console.log(data);
+                var tbody = $("#tbody");
+                tbody.empty();
+                $.each(data, function(k, v){
+                    var tr = $("<tr></tr>");
+                    var td = $("<td></td>");
+                    td.text(k);
+                    tr.append(td);
+
+                    tr.append("<td>" + v.length + "</td>");
+
+                    td = $("<td></td>");
+
+                    if(k == "register-center" || k == "config-center" || k == "monitor-server"){
+                        // do nothing
+                    } else {
+                        var btn = $("<button class='layui-btn layui-btn-xs'><i class='layui-icon'>查看服务swagger</i></button>");
+                        var url = v[0].uri + "/swagger-ui.html";
+                        btn.attr("onclick", 'window.open(\"' + url + '\")');
+                        td.html(btn.prop("outerHTML"));
+                    }
+                    tr.append(td);
+                    tbody.append(tr);
+                });
+            }
+        });
+    }
+
+    setInterval(function () {
+        setTable();
+    }, 5000);
+
+</script>
+</body>
+</html>

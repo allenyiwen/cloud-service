@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+</head>
+<body>
+<img id="headimgurl" width="80px">
+<hr>
+<span id="hello"></span>
+</body>
+
+<script src="../../js/constant.js"></script>
+<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="../../js/common.js"></script>
+<script type="text/javascript">
+    var access_token = localStorage.getItem("access_token");
+    if (access_token != null && access_token.trim().length != 0) {
+        showUserInfo(access_token);
+    } else {
+        var openid = getUrlParam("openid");
+        var toUrl = domainName + "/api-b/pages/wechat/index.html";
+        if (openid == null || openid == "") {// 跳去微信授权
+            window.location.href = domainName + "/api-u/wechat/app1?toUrl=" + encodeURIComponent(toUrl);
+        } else {
+            var hasUser = getUrlParam("hasUser");
+            var tempCode = getUrlParam("tempCode");
+            var nickname = getUrlParam("nickname");
+            var headimgurl = getUrlParam("headimgurl");
+
+            if (hasUser == "1") { // 微信已绑定用户，自动登录
+                $.ajax({
+                    type: 'post',
+                    url: domainName + '/sys/login-wechat?openid=' + openid + '&tempCode=' + tempCode,
+                   // timeout: 5000, //超时时间设置，单位毫秒
+                    data: $("#login-form").serialize(),
+                    success: function (data) {
+                        //将access_token和refresh_token写入本地
+                        localStorage.setItem("access_token", data.access_token);
+                        localStorage.setItem("refresh_token", data.refresh_token);
+
+                        showUserInfo(data.access_token);
+                    }, error: function (xhr, textStatus, errorThrown) {
+                        if (xhr.status == 401) {
+                            location.href = toUrl;
+                        }
+
+                    }
+                });
+            } else {// 未绑定，跳去登录页绑定
+                location.href = "binding.html?openid=" + openid + "&tempCode=" + tempCode + "&nickname=" + nickname + "&headimgurl=" + headimgurl;
+            }
+        }
+
+    }
+
+    // 获取用户信息
+    function showUserInfo(access_token) {
+        $.ajax({
+            type: 'get',
+            url: domainName + '/api-u/users/current?access_token=' + access_token,
+            success: function (data) {
+                $("#hello").text("微信登陆成功，欢迎：" + data.nickname);
+                var url = data.headImgUrl;
+                if (url == null || url == "") {
+                    url = headimgurl;
+                }
+                $("#headimgurl").attr("src", url);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                if (xhr.status == 401) {
+                    localStorage.removeItem("access_token");
+                    window.location.reload();
+                }
+            }
+        });
+    }
+
+</script>
+</html>

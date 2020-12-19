@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+</head>
+<body>
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+	<form class="form-horizontal" onsubmit="return false" id="form">
+		<fieldset>
+			<div class='form-group'>
+				<label class='col-md-2 control-label'>client_id</label>
+				<div class='col-md-10'>
+					<input class='form-control' placeholder='client_id' type='text' name='client_id' id='client_id' maxlength="50" readonly>
+				</div>
+			</div>
+			<div class='form-group'>
+				<label class='col-md-2 control-label'>scope（随意字符串即可，暂时没用）</label>
+				<div class='col-md-10'>
+					<input class='form-control' placeholder='scope' type='text' name='scope' id='scope' maxlength="50"
+						   data-bv-notempty='true' data-bv-notempty-message='scope 不能为空'>
+				</div>
+			</div>
+			<div class='form-group'>
+				<label class='col-md-2 control-label'>授权类型（该项不用改）</label>
+				<div class='col-md-10'>
+					<input class='form-control' placeholder='为空的话将默认refresh_token,authorization_code' type='text' name='authorized_grant_types' id='authorized_grant_types' maxlength="50"
+						   value="authorization_code,password,refresh_token"
+						   data-bv-notempty='true' data-bv-notempty-message='authorized_grant_types 不能为空'>
+				</div>
+			</div>
+			<div class='form-group'>
+				<label class='col-md-2 control-label'>access_token有效期（单位秒）</label>
+				<div class='col-md-10'>
+					<input class='form-control' placeholder='access_token有效期（单位秒）' name='access_token_validity' id='access_token_validity' maxlength="9"
+						   type="number"
+						   data-bv-notempty='true' data-bv-notempty-message='不能为空'>
+				</div>
+			</div>
+			<div class='form-group'>
+				<label class='col-md-2 control-label'>是否自动同意（默认空即可，授权码模式时用）</label>
+				<div class='col-md-10'>
+					<select class="form-control input-sm" id="autoapprove" name="autoapprove">
+						<option value="false">false</option>
+						<option value="true">true</option>
+					</select>
+				</div>
+			</div>
+			<div class='form-group'>
+				<label class='col-md-2 control-label'>回调地址（授权码模式时用，多个的话用,分开）</label>
+				<div class='col-md-10'>
+					<input class='form-control' placeholder='回调地址（授权码模式时用）' name='redirect_uri' id='redirect_uri' maxlength="255"
+						   type="text">
+				</div>
+			</div>
+
+			<div class="form-actions">
+				<div class="row" align="center">
+					<div class="col-md-12">
+					    <button class="btn btn-primary" onclick="location.href='clientList.html'">返回</button>
+						<button class="btn btn-primary" type="submit" onclick="update()">
+							<i class="fa fa-save"></i> 保存
+						</button>
+					</div>
+				</div>
+			</div>
+
+		</fieldset>
+	</form>
+</div>
+	<script src="../../js/constant.js"></script>
+	<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="../../js/jq.js"></script>
+	<script type="text/javascript" src="../../js/plugin/bootstrapvalidator/bootstrapValidator.min.js"></script>
+	<script type="text/javascript" src="../../js/common.js"></script>
+	<script type="text/javascript" src="../../layui/layui.js"></script>
+	<script type="text/javascript">
+		layui.use(['layer','laydate'], function(){
+		    var layer = layui.layer;
+		});
+
+        initData();
+
+        function initData(){
+            var id = getUrlParam("client_id");
+            if(id != ""){
+                $.ajax({
+                    type : 'get',
+                    url : domainName + '/api-o/clients/'+id,
+                    async : false,
+                    success : function(data) {
+                        $('#client_id').val(data.client_id);
+                        $('#scope').val(eval(data.scope));
+                        $('#authorized_grant_types').val(eval(data.authorized_grant_types));
+                        $('#access_token_validity').val(data.access_token_validity);
+                        $('#autoapprove').val(data.autoapprove != null && data.autoapprove.length > 0 ? "true":"false");
+                        $('#redirect_uri').val(eval(data.redirect_uri));
+
+                        if(data.isSystem){
+                           $("#authorized_grant_types").attr("readonly", true);
+                           $("#scope").attr("readonly", true);
+                        }
+                    }
+                });
+            }
+        }
+		
+		function update() {
+			$('#form').bootstrapValidator();
+			var bootstrapValidator = $("#form").data('bootstrapValidator');
+			bootstrapValidator.validate();
+		    if(!bootstrapValidator.isValid()){
+			   return;
+		    }
+		    
+		    var formdata = $("#form").serializeObject();
+
+			$.ajax({
+				type : 'put',
+				url : domainName + '/api-o/clients',
+				contentType: "application/json; charset=utf-8",  
+				data : JSON.stringify(formdata),
+				success : function(data) {
+					layer.msg("修改成功", {shift: -1, time: 1000}, function(){
+                        location.href = "clientList.html";
+                    });
+				}
+			});
+		}
+		
+	</script>
+</body>
+</html>

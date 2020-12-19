@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en-us" id="extr-page">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" media="screen" href="../../layui/css/layui.css">
+</head>
+<body>
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+		<form class="layui-form" onsubmit="return false" id="form">
+			<div class="layui-form-item">
+				<div class="layui-input-block" id="ckb">
+				</div>
+			</div>
+			 <div class="layui-form-item">
+			    <div class="layui-input-block">
+			      <button class="layui-btn" onclick="save()">立即提交</button>
+			    </div>
+			  </div>
+		</form>
+	</div>
+
+	<script src="../../js/constant.js"></script>
+	<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="../../js/jq.js"></script>
+	<script type="text/javascript" src="../../js/common.js"></script>
+	<script type="text/javascript" src="../../layui/layui.js"></script>
+<script type="text/javascript">
+		//显示所有角色
+    	$.ajax({
+			type : 'get',
+			url : domainName + '/api-u/roles',
+			async : false,
+			success : function(data) {
+				var ckb = $("#ckb");
+				$.each(data.data, function(i,item){
+					var id = item.id;
+					var name = item.name;
+					var input = $('<input type="checkbox" name="role">');
+					input.attr("id", id);
+					input.attr("value", id);
+					input.attr("title", name);
+					ckb.append(input);
+				});
+			}
+		});
+		
+		//选中用户拥有的角色
+    	var userId = getUrlParam("userId");
+    	$.ajax({
+			type : 'get',
+			url : domainName + '/api-u/users/' + userId + '/roles',
+			async : false,
+			success : function(data) {
+				if(data != null && data.length > 0){
+					$.each(data, function(i,item){
+						$("#"+ item.id).attr("checked",true);
+					});
+				}
+			}
+		});
+    
+		
+	layui.use(['form', 'layer'], function(){
+	    var layer = layui.layer;
+		
+	});
+	
+	
+	function save() {
+		var roleIds = [];
+		$("input[name='role']:checked").each(function(){
+			var v = $(this).val();
+			roleIds.push(v);
+		});
+
+		$.ajax({
+			type : 'post',
+			url : domainName + '/api-u/users/' +userId +'/roles',
+			contentType: "application/json; charset=utf-8",  
+			data : JSON.stringify(roleIds),
+			success : function(data) {
+				layer.msg("成功", {shift: -1, time: 1000}, function(){
+					var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+					parent.layer.close(index);
+                });
+			}
+		});
+		
+		
+	}
+		
+</script>
+</body>
+</html>

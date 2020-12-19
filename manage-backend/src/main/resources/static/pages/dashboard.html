@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title></title>
+<link rel="stylesheet" href="../layui/css/layui.css" media="all" />
+<link rel="stylesheet" href="../css/global.css" media="all" />
+</head>
+
+<body>
+	<div class="admin-main">
+		<blockquote class="layui-elem-quote">
+			<fieldset class="layui-elem-field">
+				<div class="layui-form">
+					<table class="layui-table">
+						<colgroup>
+							<col width="50">
+							<col width="150">
+							<col width="120">
+							<col>
+						</colgroup>
+						<thead>
+						<tr>
+							<th></th>
+							<th>微服务名</th>
+							<th>模块</th>
+							<th>介绍</th>
+						</tr>
+						</thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>register-center</td>
+                                <td>注册中心</td>
+                                <td>Spring Cloud Eureka实现</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>config-center</td>
+                                <td>配置中心</td>
+                                <td>Spring Cloud Config实现，配置文件支持本地或者git</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>user-center</td>
+                                <td>用户中心</td>
+                                <td>用户、角色、权限、绑定手机号、微信网页公众号授权</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>oauth-center</td>
+                                <td>认证中心</td>
+                                <td>Spring Cloud Oauth2实现，授权后提供access_token、支持用户名+密码、手机号+密码、手机号+短信验证码、微信公众号登陆</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>gateway-zuul</td>
+                                <td>网关</td>
+                                <td>Spring Cloud Zuul实现，路由分发请求到各个微服务</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>manage-backend</td>
+                                <td>管理后台</td>
+                                <td>菜单、ip黑名单维护，邮件发送、后台管理前端（前端支持分离部署）</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>log-center</td>
+                                <td>日志中心</td>
+                                <td>各微服务aop拦截并发送日志，基于rabbitmq处理日志,存储到mysql或者elasticsearch</td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td>file-center</td>
+                                <td>文件中心</td>
+                                <td>文件上传，实现了本地存储、阿里云，可自行扩展第三方存储</td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td>monitor-center</td>
+                                <td>监控中心</td>
+                                <td>Spring Boot Admin实现</td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td>notification-center</td>
+                                <td>通知中心</td>
+                                <td>阿里云短信、发送验证码</td>
+                            </tr>
+                        </tbody>
+					</table>
+				</div>
+			</fieldset>
+
+		</blockquote>
+		<blockquote class="layui-elem-quote">
+			<fieldset class="layui-elem-field">
+				<legend>说明：</legend>
+				<div class="layui-field-box">
+					<p>
+						<span class="layui-badge-dot"></span>该项目是微服务系统，由Spring Cloud开发，用到Java8、Maven、Mysql、Redis、Rabbitmq、elasticsearch
+					</p>
+					<p>
+						<span class="layui-badge-dot"></span>采用前后端分离，后端提供json，前后端基于access_token进行ajax交互
+					</p>
+					<p>
+						<span class="layui-badge-dot"></span>权限基于Spring Security注解实现的，因此粒度很细，达到方法级
+					</p>
+					<p>
+						<span class="layui-badge-dot"></span>zipkin分布式追踪，收集数据可存储到内存、mysql、elasticsearch
+					</p>
+				</div>
+			</fieldset>
+		</blockquote>
+		<blockquote class="layui-elem-quote">
+			<fieldset class="layui-elem-field">
+				<legend>管理后台内置功能：</legend>
+				<div class="layui-field-box">
+					<p>
+						<span class="layui-badge-dot"></span>菜单管理：菜单列表、添加菜单、修改菜单、删除菜单、菜单图标设置
+					</p>
+                    <p>
+						<span class="layui-badge-dot"></span>角色管理：角色查询、添加角色、修改角色、删除角色、分配菜单、分配权限
+					</p>
+                    <p>
+						<span class="layui-badge-dot"></span>权限管理：权限查询、添加权限、修改权限、删除权限
+					</p>
+                    <p>
+                        <span class="layui-badge-dot"></span>用户管理：用户查询、添加用户、修改用户、给用户分配角色、重置密码
+                    </p>
+                    <p>
+                        <span class="layui-badge-dot"></span>文件管理：上传文件、文件列表、文件删除
+                    </p>
+                    <p>
+                        <span class="layui-badge-dot"></span>邮件管理：发送邮件、查询邮件
+                    </p>
+                    <p>
+                        <span class="layui-badge-dot"></span>注册中心：查看微服务注册情况
+                    </p>
+                    <p>
+                        <span class="layui-badge-dot"></span>监控中心：监控微服务信息
+                    </p>
+                    <p>
+                    <span class="layui-badge-dot"></span>接口swagger文档
+                    </p>
+                    <p>
+                    <span class="layui-badge-dot"></span>ip黑名单：查询、添加、删除ip黑名单
+                    </p>
+                    <p>
+                    <span class="layui-badge-dot"></span>日志查询
+                    </p>
+					<p>
+						<span class="layui-badge-dot"></span>个人信息修改
+					</p>
+					<p>
+						<span class="layui-badge-dot"></span>修改密码
+					</p>
+					<p>
+						<span class="layui-badge-dot"></span>头像修改
+					</p>
+				</div>
+			</fieldset>
+		</blockquote>
+	</div>
+</body>
+
+</html>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.backend.dao.MailDao">
+
+	<update id="update">
+		update t_mail t
+		<set>
+			<if test="toEmail != null and toEmail != ''">
+				t.toEmail = #{toEmail},
+			</if>
+			<if test="subject != null and subject != ''">
+				t.subject = #{subject},
+			</if>
+			<if test="content != null and content != ''">
+				t.content = #{content},
+			</if>
+			<if test="status != null and status != ''">
+				t.status = #{status},
+			</if>
+			<if test="sendTime != null">
+				t.sendTime = #{sendTime},
+			</if>
+			t.updateTime = #{updateTime}
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+	<sql id="where">
+		<where>
+			<if test="subject != null and subject != ''">
+				<bind name="_subject" value="'%' + subject + '%'"/>
+				and t.subject like #{_subject}
+			</if>
+			<if test="username != null and username != ''">
+				<bind name="_username" value="'%' + username + '%'"/>
+				and t.username like #{_username}
+			</if>
+			<if test="toEmail != null and toEmail != ''">
+				<bind name="_toEmail" value="'%' + toEmail + '%'"/>
+				and t.toEmail like #{_toEmail}
+			</if>
+			<if test="status != null and status != ''">
+				and t.status = #{status}
+			</if>
+			<if test="userId != null">
+				and t.userId = #{userId}
+			</if>
+		</where>
+	</sql>
+	<select id="count" resultType="int">
+		select count(*) from t_mail t
+		<include refid="where" />
+	</select>
+
+	<select id="findData" resultType="Mail">
+		select * from t_mail t
+		<include refid="where" />
+		order by t.createTime desc
+		limit #{start}, #{length}
+	</select>
+</mapper>

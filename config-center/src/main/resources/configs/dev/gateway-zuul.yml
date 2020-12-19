@@ -1,0 +1,55 @@
+spring:
+  mvc:
+    servlet:
+      load-on-startup: 1
+  zipkin:
+    base-url: http://localhost:9411
+    enabled: true
+    sender:
+      type: web
+logging:
+  level:
+    root: info
+    com.cloud: debug
+  file: logs/${spring.application.name}.log
+zuul:
+  ignored-services: '*'
+  sensitiveHeaders: 
+  routes:
+    oauth:
+      path: /api-o/**
+      serviceId: oauth-center
+    api-u:
+      path: /api-u/**
+      serviceId: user-center
+    backend:
+      path: /api-b/**
+      serviceId: manage-backend
+    log:
+      path: /api-l/**
+      serviceId: log-center
+    file:
+      path: /api-f/**
+      serviceId: file-center
+    sms:
+      path: /api-n/**
+      serviceId: notification-center
+  host:
+    connect-timeout-millis: 10000
+    socket-timeout-millis: 60000
+  add-proxy-headers: true
+  ribbon:
+    eager-load:
+      enabled: true
+ribbon:
+  ReadTimeout: 10000
+  ConnectTimeout: 10000
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 60000
+cron:
+  black-ip: 0 0/5 * * * ?

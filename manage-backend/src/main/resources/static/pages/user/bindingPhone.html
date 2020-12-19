@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en-us" id="extr-page">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+</head>
+<body>
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+	<form class="form-horizontal" onsubmit="return false" id="form">
+		<input type="hidden" id="id" name="id">
+		<fieldset>
+			<div class="form-group">
+				<label class="col-md-2 control-label">用户名</label>
+				<div class="col-md-10">
+					<input class="form-control" placeholder="用户名" type="text" name="username" id="username" readonly="readonly">
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="col-md-2 control-label">昵称</label>
+				<div class="col-md-10">
+					<input class="form-control" placeholder="昵称" type="text" name="nickname" id="nickname" readonly="readonly">
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-md-2 control-label">手机号</label>
+				<div class="col-md-10 form-inline">
+					<input class="form-control" placeholder="手机号" type="text" maxlength="11" name="phone" id="phone">
+					<button id="btnSendCode" class="btn btn-primary" onclick="sendSms()" disabled="disabled">发送</button>
+				</div>
+			</div>
+			<div class="form-group" id="codeDiv">
+				<label class="col-md-2 control-label">验证码</label>
+				<div class="col-md-10 form-inline">
+					<input class="form-control" placeholder="验证码" type="text" maxlength="6" name="code" id="code">
+				</div>
+			</div>
+			
+			<input id="key" type="hidden">
+
+			<div class="form-actions" id="submitDiv">
+				<div class="row" align="center">
+					<div class="col-md-12">
+						<button class="btn btn-primary" type="submit" onclick="update()">
+							<i class="fa fa-save"></i> 提交
+						</button>
+					</div>
+				</div>
+			</div>
+
+		</fieldset>
+	</form>
+</div>
+
+	<script src="../../js/constant.js"></script>
+	<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="../../js/jq.js"></script>
+	<script type="text/javascript" src="../../js/plugin/bootstrapvalidator/bootstrapValidator.min.js"></script>
+	<script type="text/javascript" src="../../js/common.js"></script>
+	<script type="text/javascript" src="../../layui/layui.js"></script>
+<script type="text/javascript">
+	layui.use('layer', function(){
+	    var layer = layui.layer;
+	});
+	
+	initData();
+	$("#codeDiv").hide();
+	$("#submitDiv").hide();
+	
+	function initData(){
+		$.ajax({
+			type : 'get',
+			url : domainName + '/api-u/users/current',
+			async : false,
+			success : function(data) {
+				$("#id").val(data.id);
+				$("#username").val(data.username);
+				$("#nickname").val(data.nickname);
+				var phone = data.phone;
+				if(phone != null && phone != ""){
+					$("#phone").val(phone);
+					$("#phone").attr("readonly", true);
+				}
+				
+			}
+		});
+	}
+	
+	var myreg = /^(((13[0-9]{1})|(14[0-9]{1})|(17[0]{1})|(15[0-3]{1})|(15[5-9]{1})|(18[0-9]{1}))+\d{8})$/;
+	$("#phone").bind("input", function(){
+		var v = $(this).val();
+		if(myreg.test(v)){
+			$("#btnSendCode").attr("disabled", false);
+		}else {
+			$("#btnSendCode").attr("disabled", true);
+		}
+	});
+	
+	function sendSms(){
+		var phone = $("#phone").val();
+		if(phone == null || phone == ""){
+			layer.msg("手机号不能为空");
+			return;
+		}
+		if(!myreg.test(phone)){
+			layer.msg("手机号格式不正确");
+			return;
+		}
+		
+		$.ajax({
+			type : 'post',
+			url : domainName + '/api-n/notification-anon/codes?phone='+phone,
+			contentType: "application/json; charset=utf-8",  
+			success : function(data) {
+                $("#key").val(data.key);
+                $("#btnSendCode").attr("disabled", true);
+                $("#codeDiv").show();
+                $("#submitDiv").show();
+                settime();
+			}
+		});
+	}
+	
+	var countdown = 60;
+	function settime() {
+		var obj = $("#btnSendCode");
+        if (countdown == 0) {
+            $(obj).attr("disabled", false);
+            $(obj).text("发送");
+            countdown = 60;
+            return;
+        } else {
+        	$(obj).attr("disabled", true);
+            $(obj).text(countdown + "秒后再重试");
+            countdown--;
+        }
+        setTimeout(function() {
+            settime();
+        }, 1000)
+    }
+	
+	function update() {
+		var key = $("#key").val();
+		var code = $("#code").val();
+		var phone = $("#phone").val();
+		if(code == null || code == ""){
+			layer.msg("验证码不能为空");
+			return;
+		}
+		if(phone == null || phone == ""){
+			layer.msg("phone不能为空");
+			return;
+		}
+
+		$.ajax({
+			type : 'post',
+			url : domainName + '/api-u/users/binding-phone?key='+key+"&code="+code+"&phone="+phone,
+			contentType: "application/json; charset=utf-8",  
+			success : function(data) {
+				layer.msg("绑定成功", {shift: -1, time: 1000}, function(){
+					refresh_token(); //刷新当前登录用户缓存
+					deleteCurrentTab();
+                });
+			}
+		});
+	}
+	
+		
+</script>
+</body>
+</html>

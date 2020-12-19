@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+</head>
+<body>
+
+<form class="form-horizontal" id="login-form">
+    <fieldset>
+        <div id="legend" class="">
+            <legend class=""><img id="headimgurl" width="80px"></legend>
+        </div>
+        <div class="control-group form-inline">
+            <label class="control-label">username</label>
+            <div class="controls">
+                <input type="text" placeholder="用户名" class="input-xlarge" id="username" name="username">
+            </div>
+        </div>
+
+        <div class="control-group form-inline">
+            <label class="control-label">password</label>
+            <div class="controls">
+                <input type="password" placeholder="密码" class="input-xlarge" id="password" name="password">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label"></label>
+            <div class="controls">
+                <button class="btn btn-success" onclick="loginAndBinding(this)">登陆并绑定</button>
+            </div>
+        </div>
+
+    </fieldset>
+    <hr class="hr20">
+    <span id="info" style="color: red"></span>
+</form>
+
+</body>
+
+<script src="../../js/constant.js"></script>
+<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="../../js/common.js"></script>
+<script type="text/javascript">
+    var openid = getUrlParam("openid");
+    var tempCode = getUrlParam("tempCode");
+    var nickname = getUrlParam("nickname");
+    var headimgurl = getUrlParam("headimgurl");
+    $("#headimgurl").attr("src", headimgurl);
+
+    function loginAndBinding(obj) {
+        $(obj).attr("disabled", true);
+
+        var username = $.trim($('#username').val());
+        var password = $.trim($('#password').val());
+        if (username == "" || password == "") {
+            $("#info").html('用户名或者密码不能为空');
+            $(obj).attr("disabled", false);
+        } else {
+            $.ajax({
+                type: 'post',
+                url: domainName + '/sys/login',
+                timeout: 5000, //超时时间设置，单位毫秒
+                data: $("#login-form").serialize(),
+                success: function (data) {
+                    //将access_token和refresh_token写入本地
+                    localStorage.setItem("access_token", data.access_token);
+                    localStorage.setItem("refresh_token", data.refresh_token);
+
+                    $.ajax({
+                        type: 'post',
+                        url: domainName + '/api-u/wechat/binding-user?openid=' + openid + "&tempCode=" + tempCode + "&access_token=" + data.access_token,
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                            window.location.href = "index.html";
+                        }
+                    });
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    $(obj).attr("disabled", false);
+                    if (textStatus == 'timeout') {
+                        $("#info").html("登陆超时,请重试");
+                        return;
+                    }
+                    var msg = xhr.responseText;
+                    if (msg == undefined) {
+                        $("#info").html("请重试");
+                    } else {
+                        var response = JSON.parse(msg);
+                        var message = response.error_description;
+                        if (message == undefined) {
+                            message = response.message;
+                        }
+                        $("#info").html(message);
+                    }
+                }
+            });
+
+        }
+    }
+
+</script>
+</html>

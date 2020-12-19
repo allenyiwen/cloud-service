@@ -1,0 +1,3 @@
+# 授权中心
+access_token的有效期在表oauth_client_details的字段access_token_validity设置，单位是秒
+修改该字段的话，请务必更新或者删除redis的key，是client_details，最好通过管理后台的管理界面进行修改

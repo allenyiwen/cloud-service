@@ -1,0 +1,50 @@
+logging:
+  level:
+    root: info
+    com.cloud: debug
+  file: logs/${spring.application.name}.log
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://local.mysql.com:3306/cloud_backend?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
+    username: root
+    password: root
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-test-query: SELECT 1
+  rabbitmq:
+    host: local.rabbitmq.com
+    port: 5672
+    username: cloud-dev
+    password: cloud-dev
+    virtual-host: /
+  mail:
+    default-encoding: UTF-8
+    host: smtp.163.com
+    username:
+    password:
+    protocol: smtp
+    test-connection: false
+#    properties:
+#      mail.smtp.auth: true
+  mvc:
+    servlet:
+      load-on-startup: 1
+  aop:
+    proxy-target-class: true
+  zipkin:
+    base-url: http://localhost:9411
+    enabled: true
+    sender:
+      type: web
+mybatis:
+  type-aliases-package: com.cloud.backend.model,com.cloud.model.mail
+  mapper-locations: classpath:/mybatis-mappers/*
+  configuration:
+    mapUnderscoreToCamelCase: true
+security:
+  oauth2:
+    resource:
+      user-info-uri: http://local.gateway.com:8080/api-o/user-me
+      prefer-token-info: false

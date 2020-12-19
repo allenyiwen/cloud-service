@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>短信登录</title>
+<link href="css/login.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+
+	<div class="login">
+		<div class="message">后台管理系统</div>
+		<div id="darkbannerwrap"></div>
+
+		<form id="login-form" method="post" onsubmit="return false;">
+			<table style="width: 100%">
+				<tr>
+					<td width="50%">
+						<input id="phone" name="phone" placeholder="手机号" type="text" maxlength="11" autocomplete="off">
+					</td>
+					<td>
+						<button id="btnSendCode" class="btn btn-primary" onclick="sendSms()" disabled="disabled">发送</button>
+					</td>
+				</tr>
+				<tr>
+					<td>
+					<input id="code" name="code" placeholder="验证码" type="text" autocomplete="off">
+					</td>
+				</tr>
+			</table>
+			
+			<input id="key" name="key" type="hidden">
+			<hr class="hr15">
+			<button style="width: 100%;" type="submit"
+				onclick="login(this)">短信登陆</button>
+			<hr class="hr20">
+			<a href="login.html">用户名密码登陆</a>
+			<span id="info" style="color: red"></span>
+		</form>
+
+
+	</div>
+
+</body>
+<script src="js/constant.js"></script>
+<script src="js/libs/jquery-3.3.1.min.js"></script>
+<script type="text/javascript">
+	if (top != self) {
+		parent.location.href = loginPage;
+	}
+	
+	var access_token = localStorage.getItem("access_token");
+	if (access_token != null && access_token.trim().length != 0) {
+		$.ajax({
+			type : 'get',
+			url : domainName + '/api-u/users/current?access_token=' + access_token,
+			success : function(data) {
+				location.href = 'index.html';
+			},
+			error : function(xhr, textStatus, errorThrown) {
+				if (xhr.status == 401) {
+					localStorage.removeItem("access_token");
+				}
+			}
+		});
+	}
+	
+	var myreg = /^(((13[0-9]{1})|(14[0-9]{1})|(17[0]{1})|(15[0-3]{1})|(15[5-9]{1})|(18[0-9]{1}))+\d{8})$/;
+	$("#phone").bind("input", function(){
+		var v = $(this).val();
+		if(myreg.test(v)){
+			$("#btnSendCode").attr("disabled", false);
+		}else {
+			$("#btnSendCode").attr("disabled", true);
+		}
+	});
+	
+	function sendSms(){
+		var phone = $("#phone").val();
+		if(phone == null || phone == ""){
+			layer.msg("手机号不能为空");
+			return;
+		}
+		if(!myreg.test(phone)){
+			layer.msg("手机号格式不正确");
+			return;
+		}
+		
+		$.ajax({
+			type : 'post',
+			url : domainName + '/api-n/notification-anon/codes?phone='+phone,
+			contentType: "application/json; charset=utf-8",  
+			success : function(data) {
+                $("#key").val(data.key);
+                $("#btnSendCode").attr("disabled", true);
+                settime();
+			}
+		});
+	}
+	
+	var countdown = 60;
+	function settime() {
+		var obj = $("#btnSendCode");
+        if (countdown == 0) {
+            $(obj).attr("disabled", false);
+            $(obj).text("发送");
+            countdown = 60;
+            return;
+        } else {
+        	$(obj).attr("disabled", true);
+            $(obj).text(countdown + "秒后再重试");
+            countdown--;
+        }
+        setTimeout(function() {
+            settime();
+        }, 1000)
+    }
+	
+
+	function login(obj) {
+		$(obj).attr("disabled", true);
+
+		var phone = $.trim($('#phone').val());
+		var code = $.trim($('#code').val());
+		if (phone == "") {
+			$("#info").html('手机号不能为空');
+			$(obj).attr("disabled", false);
+			return;
+		}
+		if (code == "") {
+			$("#info").html('验证码不能为空');
+			$(obj).attr("disabled", false);
+			return;
+		}
+		
+		$.ajax({
+			type : 'post',
+			url : domainName + '/sys/login-sms',
+			timeout : 5000, //超时时间设置，单位毫秒
+			data : $("#login-form").serialize(),
+			success : function(data) {
+			    //将access_token和refresh_token写入本地
+				localStorage.setItem("access_token", data.access_token);
+				localStorage.setItem("refresh_token", data.refresh_token);
+				location.href = 'index.html';
+			},
+			error : function(xhr, textStatus, errorThrown) {
+				$(obj).attr("disabled", false);
+				if(textStatus == 'timeout') {
+					$("#info").html("登陆超时,请重试");
+					return;
+				}
+				var msg = xhr.responseText;
+				if(msg == undefined){
+                       $("#info").html("请重试");
+				} else {
+                       var response = JSON.parse(msg);
+                       var message = response.error_description;
+                       if(message == undefined){
+                           message = response.message;
+                       }
+                       $("#info").html(message);
+				}
+			}
+		});
+
+	}
+</script>
+</html>

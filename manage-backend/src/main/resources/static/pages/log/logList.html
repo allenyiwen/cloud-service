@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" media="screen" href="../../css/dataTables.bootstrap.min.css">
+<link rel="stylesheet" type="text/css" media="screen" href="../../layui/css/layui.css">
+</head>
+<body>
+    <div>
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <header style="height: 100%">
+                    <div align="left">
+	                    <table style="width: 100%">
+	                   		<tr>
+	                   			<td>
+		                   			<form class="form-inline" onsubmit="return false">
+		                   				<div class="form-group">
+											用户名：
+											<input id="username" type="text" class="form-control" placeholder="用户名">
+											模块：
+											<!--<select id="module" class="form-control input-sm">
+												<option value=""></option>
+											</select>-->
+											<input id="module" type="text" class="form-control" placeholder="模块">
+											状态：
+											<select class="form-control input-sm" id="flag">
+												<option value=""></option>
+												<option value="1">成功</option>
+												<option value="0">失败</option>
+											</select>
+											时间：
+											<input type="text" class="form-control" placeholder="开始时间" id="beginTime">
+											<input type="text" class="form-control" placeholder="结束时间" id="endTime">
+											<button id="searchBt" class="layui-btn layui-btn-sm" permission="log:query"><i class="layui-icon">&#xe615;</i>搜索</button>
+										</div>
+									</form>
+	                   			</td>
+	                   		</tr> 
+	                    </table>
+					</div>
+                </header>
+                
+                <div>
+                    <div class="widget-body no-padding">
+                        <table id="dt-table" class="table table-striped table-bordered table-hover" style="width:100%">
+                            <thead>
+                                <tr>
+                                </tr>                       
+                                <tr>
+                                    <!-- <th>id</th> -->
+                                    <th>username</th>
+                                    <th>模块</th>
+									<th>时间</th>     
+									<th>备注</th>     
+									<th>状态</th>
+									<th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+        </div>
+    </div>
+</body>
+
+
+<script src="../../js/constant.js"></script>
+<script type="text/javascript" src="../../js/libs/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="../../js/jq.js"></script>
+<script type="text/javascript" src="../../js/plugin/datatables/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="../../js/plugin/datatables/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" src="../../layui/layui.js"></script>
+<script type="text/javascript" src="../../js/my/permission.js"></script>
+<script type="text/javascript">
+var pers = checkPermission();
+var example;
+
+layui.use(['layer','util', 'laydate'], function(){
+    var layer = layui.layer;
+    var util = layui.util;
+    var laydate = layui.laydate;
+    laydate.render({
+       elem: '#beginTime'
+    });
+    laydate.render({
+       elem: '#endTime'
+    });
+    
+    /*var modules = {};
+    $.ajax({
+		type : 'get',
+		url : domainName + '/api-l/logs-modules',
+		async:false,
+		success : function(data) {
+			$.each(data, function(key, value){
+				var option = $("<option></option>");
+				option.attr("value", key);
+				option.text(value);
+				$("#module").append(option);
+				
+			});
+			
+			modules = data;
+		}
+	});*/
+    
+    function init(){
+    	example = 
+        	$('#dt-table').DataTable({
+            	"searching": false,
+            	"processing": false,
+            	"serverSide" : true,
+            	"ordering" :false,
+            	"language": {
+                    "url": "../../js/plugin/datatables/Chinese.lang"
+                },
+            	"ajax": {
+            		"url" : domainName + "/api-l/logs",
+            		"type":"get",
+            		"data":function(d){
+            			d.username = $('#username').val();
+        				d.module = $('#module').val();
+        				d.flag = $('#flag').val();
+        				d.beginTime = $('#beginTime').val();
+        				d.endTime = $('#endTime').val();
+            		},
+            		"dataSrc": function (json) {
+            			json.recordsTotal=json.total;
+            			json.recordsFiltered=json.total;
+            			return json.data;
+            		},
+        			"error":function(xhr, textStatus, errorThrown){
+        				var msg = xhr.responseText;
+        				console.log(msg);
+        				if (xhr.status == 400) {
+        					layer.msg(JSON.parse(msg).message);
+        				} else if (xhr.status == 401) {
+        					localStorage.removeItem("token");
+        					layer.msg("token过期，请重新登录", {shift: -1, time: 1000}, function(){
+                                location.href = loginPage;
+                            });
+        				} else if (xhr.status == 403) {
+        					layer.msg('未授权');
+        				} else if (xhr.status == 500) {
+        					var info = JSON.parse(msg);
+        					var exception = info.exception;
+        					var message = info.message;
+        					layer.msg('系统错误：' + (exception ? exception : message));
+        				}
+        			}
+            	},
+            	"dom": "<'dt-toolbar'r>t<'dt-toolbar-footer'<'col-sm-10 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-10' p v>>",	
+                "columns": [
+                    /* { "data": "id", "defaultContent": ""}, */
+                	{ "data": "username", "defaultContent": ""},
+                	{ 
+                    	"data": "module",
+                    	"defaultContent": "",
+                    	/*"render": function (data, type, row) {
+                    		return modules[data];
+                    	}*/
+                    },
+                    { 
+                    	"data": "createTime",
+                    	"defaultContent": "",
+                    	"render": function (data, type, row) {
+                    		return util.toDateString(data);
+                    	}
+                    },
+                    { 
+                    	"data": "remark", 
+                    	"defaultContent": "",
+                    	"render": function (data, type, row) {
+                    		if(data != null && data != ""){
+                    			if(data.length < 100){
+                    				return data;
+                    			}
+                    			
+                    			var btn = $("<button class='layui-btn layui-btn-xs'><i class='layui-icon'>查看备注</i></button>");
+                            	var id = "remark_" +row['id'];
+                            	btn.attr("id", id);
+                            	btn.attr("data", data);
+                            	btn.attr("onclick", "showData(\'" +id+"\')");
+                            	var showParams = btn.prop("outerHTML");
+                        		return showParams;
+                    		}
+                    		
+                    		return "";
+                    	}
+                    },
+                    {
+                        "data" : "flag",
+                        "defaultContent" : "",
+                        "render": function (data, type, row) {
+                            var flag = row['flag'];
+                            return flag ? "成功":"失败";
+                        }
+                    },
+                    {
+                    	"data": "params",
+                    	"defaultContent": "",
+                    	"render": function (data, type, row) {
+                    		if(data != null && data != ""){
+                    			var btn = $("<button class='layui-btn layui-btn-xs'><i class='layui-icon'>查看参数</i></button>");
+                            	var id = "params_" +row['id'];
+                            	btn.attr("id", id);
+                    			btn.attr("data", data);
+                            	btn.attr("onclick", "showData(\'" +id+"\')");
+                            	var showParams = btn.prop("outerHTML");
+                        		return showParams;
+                    		}
+                    		
+                    		return "";
+                    	}
+                    }
+                ],
+            } );
+    }
+
+    init();
+    
+    
+});
+
+function showData(id){
+	layer.open({
+		title:"查看",
+		type: 1,
+		area: ['500px', '400px'],
+		maxmin: true,
+		shadeClose: true,
+		content: $("#"+id).attr("data")
+			
+	});
+}
+
+$("#searchBt").click(function(){
+	example.ajax.reload();
+});
+</script>
+</html>
